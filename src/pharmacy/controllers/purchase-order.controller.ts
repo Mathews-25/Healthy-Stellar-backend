@@ -1,52 +1,63 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Query } from '@nestjs/common';
 import { PurchaseOrderService } from '../services/purchase-order.service';
-import { CreatePurchaseOrderDto } from '../dto/create-purchase-order.dto';
-import { UpdatePurchaseOrderDto } from '../dto/update-purchase-order.dto';
 
 @Controller('pharmacy/purchase-orders')
 export class PurchaseOrderController {
-  constructor(private orderService: PurchaseOrderService) {}
+  constructor(private purchaseOrderService: PurchaseOrderService) {}
 
   @Post()
-  async create(@Body() createDto: CreatePurchaseOrderDto) {
-    return this.orderService.create(createDto);
+  async create(@Body() createDto: any) {
+    return await this.purchaseOrderService.create(createDto);
   }
 
   @Get()
-  async findAll(@Query('supplierId') supplierId?: string) {
-    if (supplierId) {
-      return this.orderService.getOrdersBySupplier(supplierId);
-    }
-    return this.orderService.findAll();
+  async findAll() {
+    return await this.purchaseOrderService.findAll();
   }
 
   @Get('pending')
-  async getPending() {
-    return this.orderService.getPendingOrders();
+  async getPendingOrders() {
+    return await this.purchaseOrderService.getPendingOrders();
+  }
+
+  @Get('supplier/:supplierId')
+  async getOrdersBySupplier(@Param('supplierId') supplierId: string) {
+    return await this.purchaseOrderService.getOrdersBySupplier(supplierId);
+  }
+
+  @Get('drug/:drugId/open')
+  async getOpenOrdersForDrug(@Param('drugId') drugId: string) {
+    return await this.purchaseOrderService.getOpenOrdersForDrug(drugId);
   }
 
   @Get(':id')
   async findOne(@Param('id') id: string) {
-    return this.orderService.findOne(id);
+    return await this.purchaseOrderService.findOne(id);
   }
 
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() updateDto: UpdatePurchaseOrderDto) {
-    return this.orderService.update(id, updateDto);
+  async update(@Param('id') id: string, @Body() updateDto: any) {
+    return await this.purchaseOrderService.update(id, updateDto);
   }
 
-  @Patch(':id/approve')
-  async approve(@Param('id') id: string, @Body('approvedBy') approvedBy: string) {
-    return this.orderService.approveOrder(id, approvedBy);
+  @Post(':id/approve')
+  async approveOrder(
+    @Param('id') id: string,
+    @Body('approvedBy') approvedBy: string
+  ) {
+    return await this.purchaseOrderService.approveOrder(id, approvedBy);
   }
 
-  @Patch(':id/ordered')
+  @Post(':id/mark-ordered')
   async markAsOrdered(@Param('id') id: string) {
-    return this.orderService.markAsOrdered(id);
+    return await this.purchaseOrderService.markAsOrdered(id);
   }
 
   @Post(':id/receive')
-  async receive(@Param('id') id: string, @Body('items') items: any[]) {
-    return this.orderService.receiveOrder(id, items);
+  async receiveOrder(
+    @Param('id') id: string,
+    @Body('receivedItems') receivedItems: any[]
+  ) {
+    return await this.purchaseOrderService.receiveOrder(id, receivedItems);
   }
 }

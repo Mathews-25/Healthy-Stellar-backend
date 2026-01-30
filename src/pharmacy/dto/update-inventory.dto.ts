@@ -1,38 +1,62 @@
-import { IsInt, IsOptional, IsDateString, IsDecimal, IsString, Min } from 'class-validator';
+import { IsOptional, IsInt, IsString, IsBoolean, IsDateString, IsDecimal, Min } from 'class-validator';
 
 export class UpdateInventoryDto {
-  @IsInt()
   @IsOptional()
+  @IsInt()
   @Min(0)
   quantity?: number;
 
-  @IsInt()
   @IsOptional()
+  @IsInt()
   @Min(0)
   reorderLevel?: number;
 
-  @IsInt()
   @IsOptional()
-  @Min(0)
+  @IsInt()
+  @Min(1)
   reorderQuantity?: number;
 
-  @IsDateString()
   @IsOptional()
+  @IsDateString()
   expirationDate?: string;
 
-  @IsDecimal()
   @IsOptional()
-  unitCost?: number;
-
-  @IsDecimal()
-  @IsOptional()
-  sellingPrice?: number;
-
   @IsString()
-  @IsOptional()
   location?: string;
 
-  @IsString()
   @IsOptional()
+  @IsString()
   status?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isRecalled?: boolean;
+
+  @IsOptional()
+  @IsString()
+  recallReason?: string;
+
+  @IsOptional()
+  @IsDateString()
+  recallDate?: string;
+
+  @IsOptional()
+  @IsDecimal({ decimal_digits: '2' })
+  unitCost?: number;
+
+  @IsOptional()
+  @IsDecimal({ decimal_digits: '2' })
+  sellingPrice?: number;
+
+  @IsOptional()
+  @IsBoolean()
+  isFormularyDrug?: boolean;
+
+  @IsOptional()
+  @IsString()
+  formularyTier?: string;
+
+  @IsOptional()
+  @IsDecimal({ decimal_digits: '2' })
+  formularyCopay?: number;
 }

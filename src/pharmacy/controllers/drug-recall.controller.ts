@@ -1,56 +1,64 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Query } from '@nestjs/common';
 import { DrugRecallService } from '../services/drug-recall.service';
-import { CreateDrugRecallDto } from '../dto/create-drug-recall.dto';
-import { UpdateDrugRecallDto } from '../dto/update-drug-recall.dto';
 
 @Controller('pharmacy/recalls')
 export class DrugRecallController {
   constructor(private recallService: DrugRecallService) {}
 
   @Post()
-  async create(@Body() createDto: CreateDrugRecallDto) {
-    return this.recallService.create(createDto);
+  async create(@Body() createDto: any) {
+    return await this.recallService.create(createDto);
   }
 
   @Get()
-  async findAll(@Query('drugId') drugId?: string) {
-    if (drugId) {
-      return this.recallService.getRecallsByDrug(drugId);
-    }
-    return this.recallService.findAll();
+  async findAll() {
+    return await this.recallService.findAll();
   }
 
   @Get('active')
-  async getActive() {
-    return this.recallService.getActiveRecalls();
+  async getActiveRecalls() {
+    return await this.recallService.getActiveRecalls();
+  }
+
+  @Get('drug/:drugId')
+  async getRecallsByDrug(@Param('drugId') drugId: string) {
+    return await this.recallService.getRecallsByDrug(drugId);
   }
 
   @Get(':id')
   async findOne(@Param('id') id: string) {
-    return this.recallService.findOne(id);
+    return await this.recallService.findOne(id);
   }
 
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() updateDto: UpdateDrugRecallDto) {
-    return this.recallService.update(id, updateDto);
+  async update(@Param('id') id: string, @Body() updateDto: any) {
+    return await this.recallService.update(id, updateDto);
   }
 
   @Post(':id/initiate')
-  async initiate(@Param('id') id: string) {
-    return this.recallService.initiateRecall(id);
+  async initiateRecall(@Param('id') id: string) {
+    return await this.recallService.initiateRecall(id);
   }
 
   @Post(':id/complete')
-  async complete(@Param('id') id: string) {
-    return this.recallService.completeRecall(id);
+  async completeRecall(@Param('id') id: string) {
+    return await this.recallService.completeRecall(id);
   }
 
-  @Post(':id/actions')
-  async addAction(
+  @Post(':id/affected-inventory')
+  async addAffectedInventory(
+    @Param('id') id: string,
+    @Body('inventoryData') inventoryData: any[]
+  ) {
+    return await this.recallService.addAffectedInventory(id, inventoryData);
+  }
+
+  @Post(':id/action')
+  async addActionTaken(
     @Param('id') id: string,
     @Body('action') action: string,
-    @Body('performedBy') performedBy: string,
+    @Body('performedBy') performedBy: string
   ) {
-    return this.recallService.addActionTaken(id, action, performedBy);
+    return await this.recallService.addActionTaken(id, action, performedBy);
   }
 }

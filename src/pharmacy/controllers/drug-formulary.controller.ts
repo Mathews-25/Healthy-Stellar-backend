@@ -1,42 +1,75 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Delete, Query } from '@nestjs/common';
 import { DrugFormularyService } from '../services/drug-formulary.service';
-import { CreateDrugFormularyDto } from '../dto/create-drug-formulary.dto';
-import { UpdateDrugFormularyDto } from '../dto/update-drug-formulary.dto';
+import { FormularyTier } from '../entities/drug-formulary.entity';
 
 @Controller('pharmacy/formulary')
 export class DrugFormularyController {
   constructor(private formularyService: DrugFormularyService) {}
 
   @Post()
-  async create(@Body() createDto: CreateDrugFormularyDto) {
-    return this.formularyService.create(createDto);
+  async create(@Body() createDto: any) {
+    return await this.formularyService.create(createDto);
   }
 
   @Get()
-  async findAll(@Query('active') active?: string) {
-    if (active === 'true') {
-      return this.formularyService.findActive();
-    }
-    return this.formularyService.findAll();
+  async findAll() {
+    return await this.formularyService.findAll();
   }
 
-  @Get('summary')
-  async getSummary() {
-    return this.formularyService.getCostOptimizationSummary();
+  @Get('plan/:insurancePlan')
+  async getFormularyByPlan(@Param('insurancePlan') insurancePlan: string) {
+    return await this.formularyService.getFormularyByPlan(insurancePlan);
   }
 
-  @Get('drug/:drugId')
-  async getByDrug(@Param('drugId') drugId: string) {
-    return this.formularyService.findByDrug(drugId);
+  @Get('tier/:tier')
+  async getFormularyByTier(@Param('tier') tier: FormularyTier) {
+    return await this.formularyService.getFormularyByTier(tier);
+  }
+
+  @Get('coverage/:drugId/:insurancePlan')
+  async checkCoverage(
+    @Param('drugId') drugId: string,
+    @Param('insurancePlan') insurancePlan: string
+  ) {
+    return await this.formularyService.checkCoverage(drugId, insurancePlan);
+  }
+
+  @Post('cost-calculation')
+  async calculatePatientCost(@Body() body: {
+    drugId: string;
+    insurancePlan: string;
+    quantity: number;
+    drugCost: number;
+  }) {
+    return await this.formularyService.calculatePatientCost(
+      body.drugId,
+      body.insurancePlan,
+      body.quantity,
+      body.drugCost
+    );
+  }
+
+  @Get('alternatives/:drugId/:insurancePlan')
+  async getPreferredAlternatives(
+    @Param('drugId') drugId: string,
+    @Param('insurancePlan') insurancePlan: string
+  ) {
+    return await this.formularyService.getPreferredAlternatives(drugId, insurancePlan);
   }
 
   @Get(':id')
   async findOne(@Param('id') id: string) {
-    return this.formularyService.findOne(id);
+    return await this.formularyService.findOne(id);
   }
 
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() updateDto: UpdateDrugFormularyDto) {
-    return this.formularyService.update(id, updateDto);
+  async update(@Param('id') id: string, @Body() updateDto: any) {
+    return await this.formularyService.update(id, updateDto);
+  }
+
+  @Delete(':id')
+  async remove(@Param('id') id: string) {
+    await this.formularyService.remove(id);
+    return { message: 'Formulary entry deactivated successfully' };
   }
 }

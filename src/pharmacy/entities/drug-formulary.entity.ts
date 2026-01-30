@@ -1,26 +1,20 @@
-import {
-  Entity,
-  Column,
-  PrimaryGeneratedColumn,
-  CreateDateColumn,
-  UpdateDateColumn,
-  ManyToOne,
-  JoinColumn,
-} from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { Drug } from './drug.entity';
 
 export enum FormularyTier {
-  PREFERRED = 'preferred',
-  NON_PREFERRED = 'non-preferred',
-  NON_FORMULARY = 'non-formulary',
-  SPECIALTY = 'specialty',
+  TIER_1 = 'tier_1', // Preferred generic
+  TIER_2 = 'tier_2', // Preferred brand
+  TIER_3 = 'tier_3', // Non-preferred brand
+  TIER_4 = 'tier_4', // Specialty drugs
+  NOT_COVERED = 'not_covered'
 }
 
 export enum FormularyStatus {
-  ACTIVE = 'active',
-  INACTIVE = 'inactive',
-  PENDING = 'pending',
-  EXPIRED = 'expired',
+  COVERED = 'covered',
+  PRIOR_AUTH = 'prior_authorization',
+  STEP_THERAPY = 'step_therapy',
+  QUANTITY_LIMIT = 'quantity_limit',
+  NOT_COVERED = 'not_covered'
 }
 
 @Entity('drug_formulary')
@@ -32,20 +26,23 @@ export class DrugFormulary {
   @JoinColumn({ name: 'drug_id' })
   drug: Drug;
 
-  @Column({ type: 'uuid' })
+  @Column()
   drugId: string;
+
+  @Column()
+  insurancePlan: string; // Insurance plan name/ID
 
   @Column({
     type: 'enum',
     enum: FormularyTier,
-    default: FormularyTier.NON_PREFERRED,
+    default: FormularyTier.TIER_3
   })
   tier: FormularyTier;
 
   @Column({
     type: 'enum',
     enum: FormularyStatus,
-    default: FormularyStatus.ACTIVE,
+    default: FormularyStatus.COVERED
   })
   status: FormularyStatus;
 
@@ -53,40 +50,37 @@ export class DrugFormulary {
   copayAmount: number;
 
   @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
-  coinsurancePercentage: number;
+  coinsurancePercent: number;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  deductibleAmount: number;
 
   @Column({ type: 'int', nullable: true })
-  maxQuantityPerPrescription: number;
+  quantityLimit: number; // per fill or per month
 
-  @Column({ type: 'int', nullable: true })
-  maxDaysSupply: number;
+  @Column({ nullable: true })
+  quantityLimitPeriod: string; // 'per_fill', 'per_month', 'per_year'
 
-  @Column({ type: 'int', nullable: true })
-  maxRefills: number;
+  @Column('simple-array', { nullable: true })
+  priorAuthCriteria: string[];
+
+  @Column('simple-array', { nullable: true })
+  stepTherapyRequirements: string[];
+
+  @Column('simple-array', { nullable: true })
+  preferredAlternatives: string[]; // Alternative drug IDs
+
+  @Column('text', { nullable: true })
+  notes: string;
 
   @Column({ type: 'date', nullable: true })
   effectiveDate: Date;
 
   @Column({ type: 'date', nullable: true })
-  endDate: Date;
+  expirationDate: Date;
 
-  @Column({ nullable: true })
-  priorAuthorizationRequired: boolean;
-
-  @Column({ nullable: true })
-  stepTherapyRequired: boolean;
-
-  @Column({ nullable: true })
-  quantityLimitsApply: boolean;
-
-  @Column({ type: 'simple-array', nullable: true })
-  alternativeDrugs: string[]; // NDC codes of alternative drugs
-
-  @Column({ type: 'text', nullable: true })
-  notes: string;
-
-  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
-  estimatedAnnualCost: number;
+  @Column({ default: true })
+  isActive: boolean;
 
   @CreateDateColumn()
   createdAt: Date;
