@@ -1,13 +1,17 @@
-import { Controller, Get, Post, Body, Param, Patch, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Query, UseGuards, BadRequestException } from '@nestjs/common';
 import { DrugService } from '../services/drug.service';
 import { PrescriptionService } from '../services/prescription.service';
 import { PharmacyInventoryService } from '../services/pharmacy-inventory.service';
 import { SafetyAlertService } from '../services/safety-alert.service';
 import { ControlledSubstanceService } from '../services/controlled-substance.service';
 import { InventoryAlertService } from '../services/inventory-alert.service';
+import { PatientCounselingService } from '../services/patient-counseling.service';
+import { PrescriptionValidationService } from '../services/prescription-validation.service';
 import { CreateDrugDto } from '../dto/create-drug.dto';
 import { CreatePrescriptionDto } from '../dto/create-prescription.dto';
 import { UpdateInventoryDto } from '../dto/update-inventory.dto';
+import { VerifyPrescriptionDto } from '../dto/verify-prescription.dto';
+import { DispensePrescriptionDto } from '../dto/dispense-prescription.dto';
 
 @Controller('pharmacy')
 // @UseGuards(JwtAuthGuard) // Add authentication
@@ -19,6 +23,8 @@ export class PharmacyController {
     private safetyAlertService: SafetyAlertService,
     private controlledSubstanceService: ControlledSubstanceService,
     private inventoryAlertService: InventoryAlertService,
+    private counselingService: PatientCounselingService,
+    private validationService: PrescriptionValidationService,
   ) {}
 
   // Drug Management
@@ -116,8 +122,15 @@ export class PharmacyController {
   }
 
   @Post('prescriptions/:id/verify')
-  async verifyPrescription(@Param('id') id: string, @Body('pharmacistId') pharmacistId: string) {
-    return await this.prescriptionService.verifyPrescription(id, pharmacistId);
+  async verifyPrescription(@Param('id') id: string, @Body() verifyDto: VerifyPrescriptionDto) {
+    // Acknowledge any specified alerts
+    if (verifyDto.acknowledgedAlertIds && verifyDto.acknowledgedAlertIds.length > 0) {
+      for (const alertId of verifyDto.acknowledgedAlertIds) {
+        await this.safetyAlertService.acknowledgeAlert(alertId, verifyDto.pharmacistId, verifyDto.verificationNotes);
+      }
+    }
+
+    return await this.prescriptionService.verifyPrescription(id, verifyDto.pharmacistId);
   }
 
   @Post('prescriptions/:id/fill')
@@ -126,8 +139,15 @@ export class PharmacyController {
   }
 
   @Post('prescriptions/:id/dispense')
-  async dispensePrescription(@Param('id') id: string, @Body('pharmacistId') pharmacistId: string) {
-    return await this.prescriptionService.dispensePrescription(id, pharmacistId);
+  async dispensePrescription(@Param('id') id: string, @Body() dispenseDto: DispensePrescriptionDto) {
+    // Check if counseling is required and completed
+    const counselingValidation = await this.counselingService.validateCounselingCompletion(id);
+    
+    if (counselingValidation.isRequired && !counselingValidation.isCompleted) {
+      throw new BadRequestException(`Patient counseling required but not completed. Missing topics: ${counselingValidation.missingTopics.join(', ')}`);
+    }
+
+    return await this.prescriptionService.dispensePrescription(id, dispenseDto.pharmacistId);
   }
 
   @Post('prescriptions/:id/cancel')

@@ -12,6 +12,9 @@ import { PurchaseOrder } from './entities/purchase-order.entity';
 import { DrugRecall } from './entities/drug-recall.entity';
 import { DrugFormulary } from './entities/drug-formulary.entity';
 import { DrugWaste } from './entities/drug-waste.entity';
+import { PatientCounselingLog } from './entities/patient-counseling-log.entity';
+import { MedicationErrorLog } from './entities/medication-error-log.entity';
+import { PrescriptionRefill } from './entities/prescription-refill.entity';
 import { DrugService } from './services/drug.service';
 import { PharmacyInventoryService } from './services/pharmacy-inventory.service';
 import { PrescriptionService } from './services/prescription.service';
@@ -24,12 +27,18 @@ import { DrugRecallService } from './services/drug-recall.service';
 import { DrugWasteService } from './services/drug-waste.service';
 import { InventoryAlertService } from './services/inventory-alert.service';
 import { DrugFormularyService } from './services/drug-formulary.service';
+import { PatientCounselingService } from './services/patient-counseling.service';
+import { MedicationErrorService } from './services/medication-error.service';
+import { PrescriptionRefillService } from './services/prescription-refill.service';
+import { PrescriptionValidationService } from './services/prescription-validation.service';
 import { PharmacyController } from './controllers/pharmacy.controller';
 import { DrugSupplierController } from './controllers/drug-supplier.controller';
 import { PurchaseOrderController } from './controllers/purchase-order.controller';
 import { DrugRecallController } from './controllers/drug-recall.controller';
 import { DrugWasteController } from './controllers/drug-waste.controller';
 import { DrugFormularyController } from './controllers/drug-formulary.controller';
+import { MedicationSafetyController } from './controllers/medication-safety.controller';
+import { PrescriptionRefillController } from './controllers/prescription-refill.controller';
 
 @Module({
   imports: [
@@ -46,6 +55,9 @@ import { DrugFormularyController } from './controllers/drug-formulary.controller
       DrugRecall,
       DrugFormulary,
       DrugWaste,
+      PatientCounselingLog,
+      MedicationErrorLog,
+      PrescriptionRefill,
     ]),
   ],
   controllers: [
@@ -55,6 +67,8 @@ import { DrugFormularyController } from './controllers/drug-formulary.controller
     DrugRecallController,
     DrugWasteController,
     DrugFormularyController,
+    MedicationSafetyController,
+    PrescriptionRefillController,
   ],
   providers: [
     DrugService,
@@ -69,6 +83,10 @@ import { DrugFormularyController } from './controllers/drug-formulary.controller
     DrugWasteService,
     InventoryAlertService,
     DrugFormularyService,
+    PatientCounselingService,
+    MedicationErrorService,
+    PrescriptionRefillService,
+    PrescriptionValidationService,
   ],
   exports: [
     DrugService,
@@ -81,6 +99,10 @@ import { DrugFormularyController } from './controllers/drug-formulary.controller
     DrugWasteService,
     InventoryAlertService,
     DrugFormularyService,
+    PatientCounselingService,
+    MedicationErrorService,
+    PrescriptionRefillService,
+    PrescriptionValidationService,
   ],
 })
 export class PharmacyModule {}

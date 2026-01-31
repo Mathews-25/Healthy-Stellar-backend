@@ -1,6 +1,5 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Query } from '@nestjs/common';
 import { DrugWasteService } from '../services/drug-waste.service';
-import { CreateDrugWasteDto } from '../dto/create-drug-waste.dto';
 import { WasteReason } from '../entities/drug-waste.entity';
 
 @Controller('pharmacy/waste')
@@ -8,57 +7,74 @@ export class DrugWasteController {
   constructor(private wasteService: DrugWasteService) {}
 
   @Post()
-  async create(@Body() createDto: CreateDrugWasteDto) {
-    return this.wasteService.create(createDto);
+  async create(@Body() createDto: any) {
+    return await this.wasteService.create(createDto);
   }
 
   @Get()
   async findAll() {
-    return this.wasteService.findAll();
-  }
-
-  @Get('reason/:reason')
-  async getByReason(@Param('reason') reason: WasteReason) {
-    return this.wasteService.getWasteByReason(reason);
+    return await this.wasteService.findAll();
   }
 
   @Get('controlled-substances')
   async getControlledSubstanceWaste() {
-    return this.wasteService.getControlledSubstanceWaste();
+    return await this.wasteService.getControlledSubstanceWaste();
   }
 
-  @Get('report')
-  async getReport(
-    @Query('reason') reason?: WasteReason,
-    @Query('startDate') startDate?: string,
-    @Query('endDate') endDate?: string,
-    @Query('drugId') drugId?: string,
+  @Get('reason/:reason')
+  async getWasteByReason(@Param('reason') reason: WasteReason) {
+    return await this.wasteService.getWasteByReason(reason);
+  }
+
+  @Get('date-range')
+  async getWasteByDateRange(
+    @Query('startDate') startDate: string,
+    @Query('endDate') endDate: string
   ) {
-    return this.wasteService.getWasteReport({
-      reason,
-      drugId,
-      startDate: startDate ? new Date(startDate) : undefined,
-      endDate: endDate ? new Date(endDate) : undefined,
-    });
+    return await this.wasteService.getWasteByDateRange(
+      new Date(startDate),
+      new Date(endDate)
+    );
   }
 
-  @Get('cost')
-  async getTotalCost(@Query('startDate') startDate?: string, @Query('endDate') endDate?: string) {
+  @Get('total-cost')
+  async getTotalWasteCost(
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string
+  ) {
     return {
       totalCost: await this.wasteService.getTotalWasteCost(
         startDate ? new Date(startDate) : undefined,
-        endDate ? new Date(endDate) : undefined,
-      ),
+        endDate ? new Date(endDate) : undefined
+      )
     };
+  }
+
+  @Get('report')
+  async getWasteReport(
+    @Query('reason') reason?: WasteReason,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+    @Query('drugId') drugId?: string
+  ) {
+    return await this.wasteService.getWasteReport({
+      reason,
+      startDate: startDate ? new Date(startDate) : undefined,
+      endDate: endDate ? new Date(endDate) : undefined,
+      drugId
+    });
   }
 
   @Get(':id')
   async findOne(@Param('id') id: string) {
-    return this.wasteService.findOne(id);
+    return await this.wasteService.findOne(id);
   }
 
-  @Patch(':id/disposal')
-  async updateDisposal(@Param('id') id: string, @Body('disposalDetails') disposalDetails: any) {
-    return this.wasteService.updateDisposalDetails(id, disposalDetails);
+  @Patch(':id/disposal-details')
+  async updateDisposalDetails(
+    @Param('id') id: string,
+    @Body() disposalDetails: any
+  ) {
+    return await this.wasteService.updateDisposalDetails(id, disposalDetails);
   }
 }
